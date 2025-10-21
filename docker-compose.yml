@@ -1,0 +1,70 @@
+
+services:
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - METADATA_SERVICE_ADDR=metadata-service:50051
+      - VIDEO_SERVICE_ADDR=video-service:8081
+    depends_on:
+      - metadata-service
+      - video-service
+
+  metadata-service:
+    build: ./metadata-service
+    ports:
+      - "50051:50051"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017
+    depends_on:
+      - mongo
+
+  video-service:
+    build: ./video-service
+    ports:
+      - "8081:8081"
+    environment:
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - METADATA_SERVICE_ADDR=metadata-service:50051
+    depends_on:
+      - minio
+
+  mongo:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+
+volumes:
+  minio_data:

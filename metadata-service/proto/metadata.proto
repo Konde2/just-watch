@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package metadata;
+
+option go_package = "./pb";
+
+service MetadataService {
+  rpc CreateVideo(VideoRequest) returns (VideoResponse);
+  rpc UpdateVideoStatus(UpdateStatusRequest) returns (VideoResponse);
+  rpc GetVideo(VideoIdRequest) returns (VideoResponse);
+  rpc ListVideos(ListRequest) returns (ListResponse);
+}
+
+message VideoRequest {
+  string title = 1;
+  string owner_id = 2;
+  string minio_key = 3;
+  string status = 4;
+}
+
+message UpdateStatusRequest {
+  string video_id = 1;
+  string status = 2;
+}
+
+message VideoIdRequest {
+  string video_id = 1;
+}
+
+message ListRequest {}
+
+message VideoResponse {
+  string id = 1;
+  string title = 2;
+  string owner_id = 3;
+  string minio_key = 4;
+  string status = 5;
+  string created_at = 6;
+}
+
+message ListResponse {
+  repeated VideoResponse videos = 1;
+}
